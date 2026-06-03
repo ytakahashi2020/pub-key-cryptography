@@ -10,6 +10,11 @@ permissions:
   pages: write
   id-token: write
 
+# Run the actions' bundled JS on Node 24 ahead of GitHub's June 2026 default,
+# clearing the "Node.js 20 actions are deprecated" warning.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: pages
   cancel-in-progress: true
