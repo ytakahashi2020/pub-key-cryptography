@@ -39,10 +39,20 @@ export function EllipticCurveSection() {
   const Q = picks[1] ?? null
   const sum = P && Q ? add(P, Q, curve) : null
 
-  // --- discrete-log challenge ---
-  const challengeK = 13
-  const challengePoint = useMemo(() => scalarMul(BigInt(challengeK), G, curve), [G, curve])
+  // --- discrete-log challenge (interactive) ---
+  // Secret k in [2, order-2]; the user must recover it from k·G.
+  const randomK = () => 2 + Math.floor(Math.random() * (grpOrder - 3))
+  const [challengeK, setChallengeK] = useState<number>(() => randomK())
+  const challengePoint = useMemo(() => scalarMul(BigInt(challengeK), G, curve), [challengeK, G, curve])
+  const [guess, setGuess] = useState('')
   const [revealed, setRevealed] = useState(false)
+  const guessNum = guess.trim() === '' ? null : Number(guess)
+  const guessCorrect = guessNum !== null && guessNum === challengeK
+  const newChallenge = () => {
+    setChallengeK(randomK())
+    setGuess('')
+    setRevealed(false)
+  }
 
   return (
     <Section id="ecc" title={t('ecc.title')} lead={t('ecc.lead')}>
@@ -58,20 +68,23 @@ export function EllipticCurveSection() {
           <h4 className="subhead">k·G</h4>
           <CurvePlot
             curve={curve}
+            ariaLabel={t('ecc.scalarLabel')}
             highlights={[
               { point: G, kind: 'G' },
               { point: kG, kind: 'R' },
             ]}
           />
-          <label className="ecc-slider-label">
+          <label className="ecc-slider-label" htmlFor="ecc-k-slider">
             {t('ecc.scalarLabel')}: <strong>{k}</strong>
           </label>
           <input
+            id="ecc-k-slider"
             className="ecc-slider"
             type="range"
             min={1}
             max={grpOrder - 1}
             value={k}
+            aria-valuetext={`k = ${k}, k·G = ${kG === null ? t('ecc.identity') : fmt(kG)}`}
             onChange={(e) => setK(Number(e.target.value))}
           />
           <div className="ecc-result">
@@ -84,6 +97,7 @@ export function EllipticCurveSection() {
           <h4 className="subhead">{t('ecc.addTitle')}</h4>
           <CurvePlot
             curve={curve}
+            ariaLabel={t('ecc.addTitle')}
             onPick={onPick}
             line={P && Q ? { from: P, to: Q } : null}
             highlights={[
@@ -105,11 +119,39 @@ export function EllipticCurveSection() {
         <h4 className="subhead">{t('ecc.challenge')}</h4>
         <p className="note">{t('ecc.challengeDesc')}</p>
         <div className="ecc-result">
-          k·G = <code>{fmt(challengePoint)}</code>, G = <code>{fmt(G)}</code> → k = ?{' '}
-          <button className="btn-inline" onClick={() => setRevealed((r) => !r)}>
-            {t('ecc.challengeAnswer')}
-          </button>
-          {revealed && <strong className="ecc-answer"> k = {challengeK}</strong>}
+          k·G = <code>{fmt(challengePoint)}</code>, G = <code>{fmt(G)}</code> → k = ?
+        </div>
+        <div className="ecc-challenge__controls">
+          <label className="field-label" htmlFor="ecc-guess">
+            {t('ecc.guessLabel')}
+          </label>
+          <div className="ecc-challenge__row">
+            <input
+              id="ecc-guess"
+              className="ecc-guess-input"
+              type="number"
+              min={1}
+              max={grpOrder - 1}
+              value={guess}
+              placeholder="k"
+              onChange={(e) => setGuess(e.target.value)}
+            />
+            <button className="btn-inline" onClick={() => setRevealed((r) => !r)}>
+              {t('ecc.challengeAnswer')}
+            </button>
+            <button className="btn-inline" onClick={newChallenge}>
+              {t('ecc.newChallenge')}
+            </button>
+          </div>
+          {guessNum !== null && (
+            <div
+              className={`ecc-feedback ${guessCorrect ? 'ecc-feedback--ok' : 'ecc-feedback--bad'}`}
+              role="status"
+            >
+              {guessCorrect ? t('ecc.guessCorrect') : t('ecc.guessWrong')}
+            </div>
+          )}
+          {revealed && <strong className="ecc-answer">k = {challengeK}</strong>}
         </div>
       </div>
 

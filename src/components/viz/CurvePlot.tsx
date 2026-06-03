@@ -12,6 +12,8 @@ interface Props {
   /** A line to draw (chord/tangent) between two screen points. */
   line?: { from: Point; to: Point } | null
   onPick?: (pt: Point) => void
+  /** Accessible description of what this plot is showing. */
+  ariaLabel?: string
 }
 
 const KIND_COLOR: Record<string, string> = {
@@ -22,7 +24,7 @@ const KIND_COLOR: Record<string, string> = {
   sum: '#ef4444',
 }
 
-export function CurvePlot({ curve, highlights = [], line, onPick }: Props) {
+export function CurvePlot({ curve, highlights = [], line, onPick, ariaLabel }: Props) {
   const pts = useMemo(() => allPoints(curve), [curve])
   const p = Number(curve.p)
   const inner = SIZE - PAD * 2
@@ -34,8 +36,22 @@ export function CurvePlot({ curve, highlights = [], line, onPick }: Props) {
     if (h.point) highlightMap.set(`${h.point.x},${h.point.y}`, h.kind)
   }
 
+  // Build a textual summary of highlighted points for screen readers.
+  const highlightSummary = highlights
+    .filter((h) => h.point)
+    .map((h) => `${h.kind === 'sum' ? 'P+Q' : h.kind} = (${h.point!.x}, ${h.point!.y})`)
+    .join(', ')
+  const label =
+    (ariaLabel ?? `Elliptic curve over the finite field with ${pts.length} points`) +
+    (highlightSummary ? `. Highlighted: ${highlightSummary}` : '')
+
   return (
-    <svg className="curveplot" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img">
+    <svg
+      className="curveplot"
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      role={onPick ? 'group' : 'img'}
+      aria-label={label}
+    >
       {/* axes */}
       <line x1={PAD} y1={SIZE - PAD} x2={SIZE - PAD} y2={SIZE - PAD} className="curveplot__axis" />
       <line x1={PAD} y1={SIZE - PAD} x2={PAD} y2={PAD} className="curveplot__axis" />
@@ -69,6 +85,19 @@ export function CurvePlot({ curve, highlights = [], line, onPick }: Props) {
             strokeWidth={kind ? 1.5 : 0}
             className={onPick ? 'curveplot__pt curveplot__pt--clickable' : 'curveplot__pt'}
             onClick={onPick ? () => onPick(pt) : undefined}
+            role={onPick ? 'button' : undefined}
+            tabIndex={onPick ? 0 : undefined}
+            aria-label={onPick ? `Point (${pt.x}, ${pt.y})` : undefined}
+            onKeyDown={
+              onPick
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onPick(pt)
+                    }
+                  }
+                : undefined
+            }
           />
         )
       })}

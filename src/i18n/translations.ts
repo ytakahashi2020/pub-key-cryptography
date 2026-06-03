@@ -128,6 +128,10 @@ export const translations: Dict = {
     en: 'Can you guess k from the k·G below? On a small curve you can brute-force it; at real sizes you never can.',
   },
   'ecc.challengeAnswer': { ja: '答えを見る', en: 'Reveal answer' },
+  'ecc.guessLabel': { ja: 'k を予想して入力', en: 'Enter your guess for k' },
+  'ecc.newChallenge': { ja: '🔄 別の問題', en: '🔄 New challenge' },
+  'ecc.guessCorrect': { ja: '🎉 正解！ でも総当たりで解けてしまいましたね。本物の曲線ではこれが不可能です。', en: '🎉 Correct! But you just brute-forced it. On a real curve this is impossible.' },
+  'ecc.guessWrong': { ja: '❌ はずれ。もう一度試すか、答えを見てみましょう。', en: '❌ Not quite. Try again or reveal the answer.' },
   'ecc.realCurves': { ja: '本物の曲線', en: 'Real-world curves' },
   'ecc.realSecp': {
     ja: 'secp256k1（Bitcoin・Ethereum）: y² = x³ + 7、ただし p はおよそ 2²⁵⁶ の巨大素数。',
@@ -153,6 +157,15 @@ export const translations: Dict = {
   'sign.valid': { ja: '✓ 検証OK — このメッセージは確かにこの鍵で署名されています', en: '✓ Valid — this message was indeed signed by this key' },
   'sign.invalid': { ja: '✗ 検証NG — メッセージが署名後に変わっています', en: '✗ Invalid — the message changed after it was signed' },
   'sign.tamperHint': { ja: '↑ メッセージを編集すると、ここがリアルタイムで変わります', en: '↑ Edit the message and watch this update in real time' },
+  'sign.verifyCorrect': { ja: '✅ 正しい公開鍵で検証', en: '✅ Verify with the correct public key' },
+  'sign.verifyWrong': { ja: '🚫 別人の公開鍵で検証', en: "🚫 Verify with someone else's public key" },
+  'sign.signerPub': { ja: '署名者の公開鍵', en: "Signer's public key" },
+  'sign.wrongPub': { ja: '別人（攻撃者）の公開鍵', en: "Another person's (attacker's) public key" },
+  'sign.wrongFail': { ja: '✗ 検証NG — この公開鍵では通らない', en: '✗ Invalid — this key cannot verify it' },
+  'sign.asymmetryNote': {
+    ja: '🔑 検証に必要なのは公開鍵だけで、秘密鍵は一切使いません。そして対応する正しい公開鍵でしか検証は通りません。これが「秘密鍵で署名・公開鍵で検証」という非対称性です。',
+    en: '🔑 Verification needs only the public key — never the private key. And only the matching public key works. That is the asymmetry: sign with the private key, verify with the public key.',
+  },
   'sign.notEncrypt': {
     ja: '署名 ≠ 暗号化。署名はメッセージを隠しません。「この鍵の持ち主がこの内容を承認した」ことを証明するだけです。',
     en: 'Signing ≠ encryption. A signature does not hide the message; it only proves "the holder of this key approved this exact content."',

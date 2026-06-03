@@ -4,11 +4,13 @@ import { ShowMath } from '../ShowMath'
 import { Mono } from '../Mono'
 import { useDemo } from '../../DemoContext'
 import { useLang } from '../../i18n/LanguageContext'
+import { randomPrivateKey } from '../../crypto/keys'
+import { bytesToHex } from '../../crypto/encoding'
 import {
+  publicKeyForScheme,
   signEcdsa,
   signEddsa,
-  verifyEcdsa,
-  verifyEddsa,
+  verifyWithPublicKey,
   type Scheme,
   type SignResult,
 } from '../../crypto/signatures'
@@ -23,20 +25,34 @@ export function SignatureSection() {
   // this is set is what triggers the tamper-detection.
   const [signed, setSigned] = useState<{ msg: string; result: SignResult } | null>(null)
 
+  // A stable "attacker" key, different from the signer's. The verifier using
+  // THIS public key will always fail — proving the signature is bound to the
+  // signer's specific key pair.
+  const [wrongPriv] = useState(() => randomPrivateKey())
+
   const sign = () => {
     const result = scheme === 'ecdsa' ? signEcdsa(message, privateKey) : signEddsa(message, privateKey)
     setSigned({ msg: message, result })
   }
 
-  // Re-sign automatically if the user switches scheme after having signed.
+  // The signer's public key — this is all a verifier needs (no secret involved).
+  const signerPub = useMemo(
+    () => publicKeyForScheme(scheme, privateKey),
+    [scheme, privateKey],
+  )
+  const wrongPub = useMemo(() => publicKeyForScheme(scheme, wrongPriv), [scheme, wrongPriv])
+
+  // Verify with the CORRECT public key.
   const verification = useMemo(() => {
     if (!signed) return null
-    const ok =
-      signed.result.scheme === 'ecdsa'
-        ? verifyEcdsa(message, signed.result.signatureHex, privateKey)
-        : verifyEddsa(message, signed.result.signatureHex, privateKey)
-    return ok
-  }, [signed, message, privateKey])
+    return verifyWithPublicKey(signed.result.scheme, message, signed.result.signatureHex, signerPub)
+  }, [signed, message, signerPub])
+
+  // Verify with the WRONG public key — should always fail.
+  const wrongVerification = useMemo(() => {
+    if (!signed) return null
+    return verifyWithPublicKey(signed.result.scheme, message, signed.result.signatureHex, wrongPub)
+  }, [signed, message, wrongPub])
 
   const tampered = signed !== null && message !== signed.msg
 
@@ -83,10 +99,26 @@ export function SignatureSection() {
       {signed && (
         <>
           <Mono label={t('sign.signature')} value={signed.result.signatureHex} />
-          <div className={`verdict ${verification ? 'verdict--ok' : 'verdict--bad'}`}>
-            {verification ? t('sign.valid') : t('sign.invalid')}
+
+          {/* The asymmetry: verification needs only the public key. */}
+          <div className="verify-grid">
+            <div className="verify-card">
+              <div className="verify-card__title">{t('sign.verifyCorrect')}</div>
+              <Mono label={t('sign.signerPub')} value={bytesToHex(signerPub)} />
+              <div className={`verdict ${verification ? 'verdict--ok' : 'verdict--bad'}`}>
+                {verification ? t('sign.valid') : t('sign.invalid')}
+              </div>
+            </div>
+            <div className="verify-card">
+              <div className="verify-card__title">{t('sign.verifyWrong')}</div>
+              <Mono label={t('sign.wrongPub')} value={bytesToHex(wrongPub)} />
+              <div className={`verdict ${wrongVerification ? 'verdict--ok' : 'verdict--bad'}`}>
+                {wrongVerification ? t('sign.valid') : t('sign.wrongFail')}
+              </div>
+            </div>
           </div>
           {tampered && <p className="note note--warn">{t('sign.tamperHint')}</p>}
+          <p className="note">{t('sign.asymmetryNote')}</p>
 
           <ShowMath>
             <ol className="steps">

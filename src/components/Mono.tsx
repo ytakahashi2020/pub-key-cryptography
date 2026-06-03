@@ -16,13 +16,20 @@ export function Mono({ value, label, breakAll = true }: { value: string; label?:
     }
   }
 
+  const copyLabel = label ? `${t('common.copy')}: ${label}` : t('common.copy')
+
   return (
     <div className="mono">
       {label && <div className="mono__label">{label}</div>}
       <div className="mono__row">
         <code className={breakAll ? 'mono__value mono__value--break' : 'mono__value'}>{value}</code>
-        <button className="mono__copy" onClick={copy} title={t('common.copy')}>
-          {copied ? '✓' : '⧉'}
+        <button
+          className="mono__copy"
+          onClick={copy}
+          title={t('common.copy')}
+          aria-label={copyLabel}
+        >
+          <span aria-hidden="true">{copied ? '✓' : '⧉'}</span>
         </button>
       </div>
     </div>

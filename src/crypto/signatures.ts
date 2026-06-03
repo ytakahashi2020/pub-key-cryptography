@@ -15,6 +15,25 @@ import { bytesToHex, utf8ToBytes } from './encoding'
 
 export type Scheme = 'ecdsa' | 'eddsa'
 
+/** The public key matching a private key, for the given scheme (compressed for ECDSA). */
+export function publicKeyForScheme(scheme: Scheme, privateKey: Uint8Array): Uint8Array {
+  return scheme === 'ecdsa'
+    ? secp256k1.getPublicKey(privateKey, true)
+    : ed25519.getPublicKey(privateKey)
+}
+
+/** Verify against an explicit public key, dispatching on scheme. */
+export function verifyWithPublicKey(
+  scheme: Scheme,
+  message: string,
+  signatureHex: string,
+  publicKey: Uint8Array,
+): boolean {
+  return scheme === 'ecdsa'
+    ? verifyEcdsaWithPublicKey(message, signatureHex, publicKey)
+    : verifyEddsaWithPublicKey(message, signatureHex, publicKey)
+}
+
 export interface SignResult {
   scheme: Scheme
   signatureHex: string
@@ -39,18 +58,26 @@ export function signEcdsa(message: string, privateKey: Uint8Array): SignResult {
   }
 }
 
+/** Verify against a PUBLIC key directly — the verifier never sees the secret. */
+export function verifyEcdsaWithPublicKey(
+  message: string,
+  signatureHex: string,
+  publicKey: Uint8Array,
+): boolean {
+  try {
+    const digest = sha256Bytes(utf8ToBytes(message))
+    return secp256k1.verify(hexToBytesLocal(signatureHex), digest, publicKey)
+  } catch {
+    return false
+  }
+}
+
 export function verifyEcdsa(
   message: string,
   signatureHex: string,
   privateKey: Uint8Array,
 ): boolean {
-  try {
-    const digest = sha256Bytes(utf8ToBytes(message))
-    const pub = secp256k1.getPublicKey(privateKey, true)
-    return secp256k1.verify(hexToBytesLocal(signatureHex), digest, pub)
-  } catch {
-    return false
-  }
+  return verifyEcdsaWithPublicKey(message, signatureHex, secp256k1.getPublicKey(privateKey, true))
 }
 
 // --- EdDSA / Ed25519 ---
@@ -67,17 +94,25 @@ export function signEddsa(message: string, seed: Uint8Array): SignResult {
   }
 }
 
+/** Verify against a PUBLIC key directly — the verifier never sees the seed. */
+export function verifyEddsaWithPublicKey(
+  message: string,
+  signatureHex: string,
+  publicKey: Uint8Array,
+): boolean {
+  try {
+    return ed25519.verify(hexToBytesLocal(signatureHex), utf8ToBytes(message), publicKey)
+  } catch {
+    return false
+  }
+}
+
 export function verifyEddsa(
   message: string,
   signatureHex: string,
   seed: Uint8Array,
 ): boolean {
-  try {
-    const pub = ed25519.getPublicKey(seed)
-    return ed25519.verify(hexToBytesLocal(signatureHex), utf8ToBytes(message), pub)
-  } catch {
-    return false
-  }
+  return verifyEddsaWithPublicKey(message, signatureHex, ed25519.getPublicKey(seed))
 }
 
 // local hex parser that requires exact bytes (no padding) for verification
