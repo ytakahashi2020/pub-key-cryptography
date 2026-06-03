@@ -239,7 +239,18 @@ code { font-family: var(--mono); }
   border-radius: 14px;
   padding: 18px;
 }
+.chaincard { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
 .chaincard__name { margin: 0 0 12px; font-size: 18px; }
+.chaincard--solana .chaincard__name { color: var(--solana); }
+.chaincard--bitcoin .chaincard__name { color: var(--bitcoin); }
+.chaincard--ethereum .chaincard__name { color: var(--ethereum); }
+.chaincard.is-focused {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+.chaincard--solana.is-focused { border-color: var(--solana); }
+.chaincard--bitcoin.is-focused { border-color: var(--bitcoin); }
+.chaincard--ethereum.is-focused { border-color: var(--ethereum); }
 .chaincard__addr { margin-top: 12px; }
 .chaincard__addrlabel { font-size: 12px; color: var(--text-dim); }
 

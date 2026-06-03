@@ -28,7 +28,6 @@ export const translations: Dict = {
   'common.generate': { ja: '🎲 ランダムに鍵を生成', en: '🎲 Generate a random key' },
   'common.privKeyLabel': { ja: '秘密鍵 (16進・64桁)', en: 'Private key (hex, 64 chars)' },
   'common.copy': { ja: 'コピー', en: 'Copy' },
-  'common.copied': { ja: 'コピーしました', en: 'Copied' },
   'common.intermediate': { ja: '中級者向けの補足', en: 'For intermediate readers' },
 
   // --- security banner ---
@@ -77,6 +76,8 @@ export const translations: Dict = {
   'keys.pubUncompressed': { ja: '公開鍵（非圧縮 65バイト）', en: 'Public key (uncompressed, 65 bytes)' },
   'keys.pubEd': { ja: 'Ed25519 公開鍵（32バイト）', en: 'Ed25519 public key (32 bytes)' },
   'keys.address': { ja: 'アドレス', en: 'Address' },
+  'keys.addrLegacy': { ja: 'アドレス（レガシー P2PKH）', en: 'Address (legacy P2PKH)' },
+  'keys.addrSegwit': { ja: 'アドレス（SegWit bech32）', en: 'Address (SegWit bech32)' },
   'keys.highlight': {
     ja: '💡 同じ秘密鍵なのに、3つのアドレスは似ても似つきません。しかも Solana はハッシュすら使わず、公開鍵をそのまま Base58 にするだけです。',
     en: '💡 Same private key, three totally different addresses. And Solana does not even hash — it just Base58-encodes the public key directly.',
@@ -180,7 +181,6 @@ export const translations: Dict = {
     en: 'Change one character and about half the output bits flip. Below compares the hash of your input vs. input+1 char (red = changed digits).',
   },
   'hash.changed': { ja: '変化したビット', en: 'changed bits' },
-  'hash.of': { ja: '/', en: 'of' },
   'hash.oneway': {
     ja: '🔒 ハッシュは一方通行です。出力から入力を「復元」することはできません（暗号化とは違います）。',
     en: '🔒 Hashing is one-way. You cannot "decrypt" the input back from the output (it is not encryption).',

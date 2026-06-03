@@ -45,12 +45,3 @@ export function secpPublicKeyUncompressed(privateKey: Uint8Array): Uint8Array {
 export function ed25519PublicKey(seed: Uint8Array): Uint8Array {
   return ed25519.getPublicKey(seed) // 32 bytes
 }
-
-/** The 64-byte secret key Solana wallets store: seed(32) || publicKey(32). */
-export function solanaSecretKey64(seed: Uint8Array): Uint8Array {
-  const pub = ed25519PublicKey(seed)
-  const out = new Uint8Array(64)
-  out.set(seed, 0)
-  out.set(pub, 32)
-  return out
-}

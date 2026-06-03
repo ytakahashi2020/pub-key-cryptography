@@ -70,7 +70,7 @@ export function EllipticCurveSection() {
             className="ecc-slider"
             type="range"
             min={1}
-            max={grpOrder}
+            max={grpOrder - 1}
             value={k}
             onChange={(e) => setK(Number(e.target.value))}
           />

@@ -40,12 +40,6 @@ function inv(n: bigint, p: bigint): bigint {
   return mod(old_s, p)
 }
 
-export function isOnCurve(pt: Point, curve: ToyCurve): boolean {
-  if (pt === null) return true
-  const { a, b, p } = curve
-  return mod(pt.y * pt.y, p) === mod(pt.x * pt.x * pt.x + a * pt.x + b, p)
-}
-
 /** Every affine point on the curve (excluding the point at infinity). */
 export function allPoints(curve: ToyCurve): Point[] {
   const { a, b, p } = curve
@@ -57,11 +51,6 @@ export function allPoints(curve: ToyCurve): Point[] {
     }
   }
   return pts
-}
-
-export function negate(pt: Point, curve: ToyCurve): Point {
-  if (pt === null) return null
-  return { x: pt.x, y: mod(-pt.y, curve.p) }
 }
 
 /** Point addition with the chord-and-tangent rule. */
