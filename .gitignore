@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+*.tsbuildinfo
+
+# emitted by composite tsconfig build of vite.config.ts
+vite.config.d.ts
+vite.config.js
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
